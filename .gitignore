@@ -1,2 +1,7 @@
 webapp/static
 *.zip
+commands.txt
+data/interactions.csv
+.idea
+.ipynb_checkpoints
+__pycache__

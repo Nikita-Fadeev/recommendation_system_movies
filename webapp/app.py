@@ -8,15 +8,20 @@ from flask import Flask, render_template, session, request
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-recommendation_service_url = "http://135.181.153.151:5001"
-interactions_url = 'http://135.181.153.151:5000'
+HOST = 'http://157.180.37.79'
+recommendation_service_url = f"{HOST}:5001"
+interactions_url = f"{HOST}:5000"
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+links_path = os.path.join(current_dir, 'static', 'links.csv')
+movies_path = os.path.join(current_dir, 'static', 'movies.csv')
 
 links_data = (
-    pl.read_csv('static/links.csv')
+    pl.read_csv(links_path)
     .with_columns(pl.col('movieId').cast(pl.Utf8))
 )
 movies_data = (
-    pl.read_csv('static/movies.csv')
+    pl.read_csv(movies_path)
     .with_columns(pl.col('movieId').cast(pl.Utf8))
 )
 
@@ -94,4 +99,4 @@ if __name__ == '__main__':
         "item_ids": list(map(str, movie_id_title.keys())),
     }
     requests.post(f'{recommendation_service_url}/add_items', json=data)
-    app.run(debug=True, port=8000)
+    app.run(host='0.0.0.0', port=8000, debug=True)

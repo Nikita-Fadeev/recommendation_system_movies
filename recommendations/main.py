@@ -47,12 +47,28 @@ def get_recs(user_id: str):
     global unique_item_ids
 
     try:
-        item_ids = redis_connection.json().get('top_items')
+        most_popular = redis_connection.json().get('top_items')
     except redis.exceptions.ConnectionError:
-        item_ids = None
+        most_popular = []
 
-    if item_ids is None or random.random() < EPSILON:
+    try:
+        random_ids = np.random.choice(list(unique_item_ids), size=20, replace=False).tolist()
+    except Exception:
+        random_ids = []
+
+    try:
+        key = f'recomendations:{user_id}'
+        personal_ids = [i.decode('utf-8') for i in redis_connection.lrange(key, 0, -1)]
+    except redis.exceptions.ConnectionError:
+        personal_ids = []
+
+    candidates = list(set(personal_ids[:20] + most_popular[:5] + random_ids[:5]))
+    sample_size = min(20, len(candidates))
+    item_ids = np.random.choice(list(candidates), size=sample_size, replace=False)
+
+    if random.random() < EPSILON:
         item_ids = np.random.choice(list(unique_item_ids), size=20, replace=False).tolist()
+
     return RecommendationsResponse(item_ids=item_ids)
 
 
